@@ -1,0 +1,63 @@
+version: "3.7"
+services: 
+  
+  # cabin_upgrade:
+  #   image: openjdk:8-jdk-alpine
+  #   volumes: 
+  #     - "./app:/app"
+  #   working_dir: "/app"
+  #   entrypoint: "mkdir /root/.aws ; echo aws_access_key_id=x > /root/.aws/credentials ; echo aws_secret_access_key=x >> /root/.aws/credentials; java -jar /app/cabin_upgrade-2.0.14-SNAPSHOT.jar"
+  #   # command: 
+  #   #   - java
+  #   #   - -jar
+  #   #   - cabin_upgrade-2.0.14-SNAPSHOT.jar
+  #   environment: 
+  #     - amadeus.security.password="ENC(9xYpFlnJwTF+qr/j0iylGmh3MQpu+Qbs)"
+  #     - aws_access_key_id=x
+  #     - aws_secret_access_key=x
+  #     - aws-endpoint-url.dynamodb=http://dynamo:8000
+  #     - aws-endpoint-url.kinesis=http://kinesis:4567
+  #   ports: 
+  #     - 8080:8080
+  #   depends_on: 
+  #     - dynamo
+  #     - kinesis
+
+  kinesis:
+    image: instructure/kinesalite
+    # container_name: kinesiscontainer
+    # hostname: kinesishost
+    ports: 
+      - 4568:4567
+    expose: 
+      - 4567
+    depends_on: 
+      - dynamodb
+    networks: 
+      local_aws:
+        aliases: 
+          - kinesisalias
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    # container_name: dynamocontainer
+    # hostname: dynamohost
+    ports: 
+      - 4567:8000
+    expose: 
+      - 8000
+    command: 
+      - -jar 
+      - DynamoDBLocal.jar
+      - -sharedDb
+    networks: 
+      local_aws:
+        aliases: 
+          - dynamoalias  
+
+networks: 
+  local_aws: 
+    name: local_aws
+    driver: bridge
+
+    
