@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: kafka-net
+spec:
+  podSelector:
+    matchLabels:
+      kafka-net: "true"
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          kafka-net: "true"

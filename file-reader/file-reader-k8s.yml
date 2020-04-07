@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: file-reader-net
+spec:
+  podSelector:
+    matchLabels:
+      file-reader-net: "true"
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          file-reader-net: "true"
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-net
+spec:
+  podSelector:
+    matchLabels:
+      kafka-net: "true"
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          kafka-net: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        kafka-net: "true"
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:12
+        ports:
+        - containerPort: 5432
+        env:
+          - name: POSTGRES_PASSWORD
+            value: postgres
+      restartPolicy: Always
+---
+apiVersion: v1
+kind:  Service
+metadata:
+  name: postgres-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: postgres
+  ports:
+  - port: 54321
+    targetPort: 5432
